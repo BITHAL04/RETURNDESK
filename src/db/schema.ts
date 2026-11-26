@@ -28,31 +28,20 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import {
+  REQUEST_EVENT_TYPES,
+  REQUEST_STATUSES,
+  RESOLUTIONS,
+  RETURN_REASONS,
+} from "../lib/domain/constants";
 
-export const requestStatus = pgEnum("request_status", [
-  "OPEN",
-  "IN_REVIEW",
-  "APPROVED",
-  "REJECTED",
-  "COMPLETED",
-]);
+export const requestStatus = pgEnum("request_status", REQUEST_STATUSES);
 
-export const returnReason = pgEnum("return_reason", [
-  "DAMAGED",
-  "WRONG_ITEM",
-  "SIZE_ISSUE",
-  "NOT_AS_DESCRIBED",
-  "CHANGED_MIND",
-]);
+export const returnReason = pgEnum("return_reason", RETURN_REASONS);
 
-export const resolution = pgEnum("resolution", ["REFUND", "REPLACEMENT", "STORE_CREDIT"]);
+export const resolution = pgEnum("resolution", RESOLUTIONS);
 
-export const requestEventType = pgEnum("request_event_type", [
-  "CREATED",
-  "DETAILS_UPDATED",
-  "STATUS_CHANGED",
-  "REMOVED",
-]);
+export const requestEventType = pgEnum("request_event_type", REQUEST_EVENT_TYPES);
 
 /** Backs the human-readable reference. Sequences never hand out the same value twice, even under concurrency. */
 export const referenceSequence = pgSequence("return_request_reference_seq", {
@@ -159,6 +148,4 @@ export const requestEvents = pgTable(
 export type ReturnRequestRow = typeof returnRequests.$inferSelect;
 export type NoteRow = typeof notes.$inferSelect;
 export type RequestEventRow = typeof requestEvents.$inferSelect;
-export type RequestStatus = (typeof requestStatus.enumValues)[number];
-export type ReturnReason = (typeof returnReason.enumValues)[number];
-export type Resolution = (typeof resolution.enumValues)[number];
+export type { RequestStatus, ReturnReason, Resolution } from "../lib/domain/constants";
