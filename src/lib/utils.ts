@@ -43,7 +43,7 @@ export function formatRelative(iso: string, now = Date.now()) {
 export function initials(name: string) {
   return name
     .split(/\s+/)
-    .filter(Boolean)
+    .filter((word) => /^\p{L}/u.test(word))
     .slice(0, 2)
     .map((p) => p[0]!.toUpperCase())
     .join("");

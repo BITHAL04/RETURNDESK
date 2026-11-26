@@ -17,7 +17,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         {children}
         <Toaster
-          position="bottom-right"
+          position="top-right"
           toastOptions={{
             classNames: {
               toast: "!rounded-xl !border-line !shadow-raised !font-sans",
