@@ -199,7 +199,10 @@ export function RequestForm({
               />
             )}
           </Field>
-          <Field label="Reason for return" error={errors.reason?.message}>
+          <Field
+            label="Reason for return"
+            error={errors.reason ? "Choose a reason for the return." : undefined}
+          >
             {(a) => (
               <Select {...a} {...register("reason")}>
                 <option value="" disabled>
