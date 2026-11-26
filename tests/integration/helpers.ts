@@ -3,6 +3,8 @@ import { Pool } from "pg";
 import * as collection from "@/app/api/requests/route";
 import * as item from "@/app/api/requests/[id]/route";
 import * as transitions from "@/app/api/requests/[id]/transitions/route";
+import * as notesRoute from "@/app/api/requests/[id]/notes/route";
+import * as statsRoute from "@/app/api/stats/route";
 
 export const pool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
 
@@ -48,6 +50,11 @@ export const api = {
     transitions
       .POST(jsonRequest("POST", `/api/requests/${id}/transitions`, body), ctx(id))
       .then(toResult),
+  addNote: (id: string, body: unknown) =>
+    notesRoute.POST(jsonRequest("POST", `/api/requests/${id}/notes`, body), ctx(id)).then(toResult),
+  notes: (id: string) =>
+    notesRoute.GET(jsonRequest("GET", `/api/requests/${id}/notes`), ctx(id)).then(toResult),
+  stats: () => statsRoute.GET(jsonRequest("GET", "/api/stats"), undefined).then(toResult),
 };
 
 let counter = 0;
