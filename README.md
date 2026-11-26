@@ -4,7 +4,7 @@ A returns desk for a small online store. Support agents raise return requests, m
 fixed lifecycle, record a resolution (refund, replacement or store credit), leave notes, and take
 requests off the desk without destroying them.
 
-- **Live app:** _deployment in progress — URL will be added here once verified_
+- **Live app:** https://returndesk-sepia-xi.vercel.app
 - **Repository:** https://github.com/BITHAL04/RETURNDESK
 
 ---
@@ -282,6 +282,9 @@ Hosted on **Vercel** with **Neon** PostgreSQL.
 - Vercel runs the `vercel-build` script: `npm run db:migrate && npm run db:seed && next build`.
   Migrations are idempotent (tracked in `drizzle.__drizzle_migrations`) and the seed skips rows that
   already exist, so every deploy is safe to repeat and never destroys data.
+- Live at https://returndesk-sepia-xi.vercel.app. The production API was verified directly
+  against all five business rules, validation errors, 404/405 handling and combined
+  search/filter/sort/paging.
 - `DATABASE_URL` (Neon pooled connection string) is set as a Vercel environment variable. No
   credentials are committed; `.env` is git-ignored and `.env.example` lists every variable.
 
