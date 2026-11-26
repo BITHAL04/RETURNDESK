@@ -1,4 +1,4 @@
-import { handler, ok, readJson } from "@/lib/api/response";
+import { handler, ok, readJson, methodNotAllowed } from "@/lib/api/response";
 import { requestIdFrom } from "@/lib/api/params";
 import { transitionSchema } from "@/lib/validation/requests";
 import { transitionRequest } from "@/server/requests/service";
@@ -15,3 +15,6 @@ export const POST = handler(async (request: Request, context: Context) => {
   const input = transitionSchema.parse(await readJson(request));
   return ok(await transitionRequest(id, input));
 });
+
+const notAllowed = methodNotAllowed(["POST"]);
+export { notAllowed as GET, notAllowed as PUT, notAllowed as PATCH, notAllowed as DELETE };

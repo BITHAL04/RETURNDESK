@@ -1,4 +1,4 @@
-import { handler, ok, readJson } from "@/lib/api/response";
+import { handler, ok, readJson, methodNotAllowed } from "@/lib/api/response";
 import { requestIdFrom } from "@/lib/api/params";
 import { createNoteSchema } from "@/lib/validation/requests";
 import { addNote, listNotes } from "@/server/requests/service";
@@ -19,3 +19,6 @@ export const POST = handler(async (request: Request, context: Context) => {
   const input = createNoteSchema.parse(await readJson(request));
   return ok(await addNote(id, input), { status: 201 });
 });
+
+const notAllowed = methodNotAllowed(["GET", "POST"]); // Notes are append-only, so PATCH and DELETE are refused.
+export { notAllowed as PUT, notAllowed as PATCH, notAllowed as DELETE };

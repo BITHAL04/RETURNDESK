@@ -9,6 +9,7 @@
  *        DUPLICATE_LIVE_REQUEST, CONCURRENT_MODIFICATION)
  *   422 RESOLUTION_REQUIRED / INVALID_REFUND_AMOUNT – well-formed but
  *       semantically invalid decision data
+ *   405 METHOD_NOT_ALLOWED               – the route exists but not for this HTTP method
  *   500 INTERNAL_ERROR                   – unexpected; details are logged, never returned
  */
 export type ErrorCode =
@@ -23,6 +24,7 @@ export type ErrorCode =
   | "RESOLUTION_REQUIRED"
   | "INVALID_REFUND_AMOUNT"
   | "ROUTE_NOT_FOUND"
+  | "METHOD_NOT_ALLOWED"
   | "INTERNAL_ERROR";
 
 export type ErrorDetails = Record<string, unknown> | Array<Record<string, unknown>>;

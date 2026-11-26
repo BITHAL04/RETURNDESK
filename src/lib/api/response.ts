@@ -126,3 +126,14 @@ export function handler<C>(fn: (request: Request, context: C) => Promise<Respons
     }
   };
 }
+
+/** JSON 405 for HTTP methods a route does not support (instead of an empty default response). */
+export function methodNotAllowed(allowed: string[]) {
+  return () => {
+    const response = fail(
+      new AppError(405, "METHOD_NOT_ALLOWED", `This endpoint supports: ${allowed.join(", ")}.`),
+    );
+    response.headers.set("Allow", allowed.join(", "));
+    return response;
+  };
+}

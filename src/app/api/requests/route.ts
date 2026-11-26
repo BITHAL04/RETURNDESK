@@ -1,4 +1,4 @@
-import { handler, ok, readJson } from "@/lib/api/response";
+import { handler, ok, readJson, methodNotAllowed } from "@/lib/api/response";
 import {
   createRequestSchema,
   listQuerySchema,
@@ -22,3 +22,6 @@ export const POST = handler(async (request: Request) => {
     { status: 201, headers: { Location: `/api/requests/${created.id}` } },
   );
 });
+
+const notAllowed = methodNotAllowed(["GET", "POST"]);
+export { notAllowed as PUT, notAllowed as PATCH, notAllowed as DELETE };

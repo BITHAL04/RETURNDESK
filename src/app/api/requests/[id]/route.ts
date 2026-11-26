@@ -1,4 +1,4 @@
-import { handler, ok, readJson } from "@/lib/api/response";
+import { handler, ok, readJson, methodNotAllowed } from "@/lib/api/response";
 import { requestIdFrom } from "@/lib/api/params";
 import { updateRequestSchema } from "@/lib/validation/requests";
 import { getRequestDetail, removeRequest, updateRequest } from "@/server/requests/service";
@@ -21,3 +21,6 @@ export const PATCH = handler(async (request: Request, context: Context) => {
 export const DELETE = handler(async (_request: Request, context: Context) => {
   return ok(await removeRequest(await requestIdFrom(context)));
 });
+
+const notAllowed = methodNotAllowed(["GET", "PATCH", "DELETE"]);
+export { notAllowed as POST, notAllowed as PUT };

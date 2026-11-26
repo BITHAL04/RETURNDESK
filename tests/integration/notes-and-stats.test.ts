@@ -70,3 +70,18 @@ describe("GET /api/stats", () => {
     expect(res.body.data.recent).toHaveLength(2);
   });
 });
+
+describe("HTTP semantics", () => {
+  it("refuses note edits and deletes with a JSON 405", async () => {
+    const notesRoute = await import("@/app/api/requests/[id]/notes/route");
+    for (const method of ["PATCH", "DELETE"] as const) {
+      const res = await notesRoute[method]();
+      expect(res.status).toBe(405);
+      expect(res.headers.get("Allow")).toBe("GET, POST");
+      expect(await res.json()).toMatchObject({
+        success: false,
+        error: { code: "METHOD_NOT_ALLOWED" },
+      });
+    }
+  });
+});
