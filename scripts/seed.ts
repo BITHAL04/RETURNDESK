@@ -98,8 +98,9 @@ function buildPlan() {
     const quantity = (i % 3) + 1;
     const refundAmount =
       resolution === "REFUND" ? (Number(item.price) * quantity).toFixed(2) : null;
-    // Spread creation over the last ~40 days, newest first in the list.
-    const createdAt = new Date(now - (i + 1) * 27 * HOUR);
+    // Spread creation over the last ~40 days, interleaving statuses so recent activity looks realistic.
+    // 13 is coprime with 34, so every request gets a distinct slot.
+    const createdAt = new Date(now - (((i * 13) % statusPlan.length) + 1) * 27 * HOUR);
     return {
       status,
       resolution,
@@ -129,7 +130,9 @@ async function main() {
   let skipped = 0;
 
   try {
-    for (const entry of buildPlan()) {
+    // Insert oldest first so sequence-generated references increase with creation time.
+    const plan = buildPlan().sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    for (const entry of plan) {
       await db.transaction(async (tx) => {
         const existing = await tx
           .select({ id: returnRequests.id })
