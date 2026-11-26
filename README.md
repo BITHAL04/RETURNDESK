@@ -6,6 +6,7 @@ requests off the desk without destroying them.
 
 - **Live app:** https://returndesk-sepia-xi.vercel.app
 - **Repository:** https://github.com/BITHAL04/RETURNDESK
+- **Run it locally:** [step-by-step guide](#running-locally) for Windows, macOS and Linux (about 5 minutes)
 
 ---
 
@@ -70,56 +71,199 @@ All of the following are implemented and covered by automated tests.
 
 ## Running locally
 
-**Prerequisites:** Node.js ≥ 20.9 and a PostgreSQL 14+ server (local install or Docker).
+> **TL;DR** (you already have Node 20+ and a PostgreSQL you can log in to):
+>
+> ```bash
+> git clone https://github.com/BITHAL04/RETURNDESK.git returndesk && cd returndesk
+> npm install
+> cp .env.example .env          # Windows PowerShell: Copy-Item .env.example .env
+> # edit DATABASE_URL in .env (user, password, port)
+> npm run db:migrate && npm run db:seed
+> npm run dev                   # → http://localhost:3000
+> ```
+>
+> Something went wrong? See [Troubleshooting](#troubleshooting).
+
+### 1. Prerequisites
+
+| Tool       | Version                                                  | Check with      |
+| ---------- | -------------------------------------------------------- | --------------- |
+| Node.js    | **20.9 or newer** (LTS 22 recommended)                   | `node -v`       |
+| npm        | comes with Node                                          | `npm -v`        |
+| Git        | any                                                      | `git --version` |
+| PostgreSQL | **14 or newer** (local, Docker, or a free Neon database) | see step 3      |
+
+No global packages are needed; everything (Next.js, Drizzle, tsx, Vitest, Playwright) installs locally.
+
+### 2. Get the code and install dependencies
 
 ```bash
-# 1. Install
-git clone https://github.com/BITHAL04/RETURNDESK.git returndesk && cd returndesk
+git clone https://github.com/BITHAL04/RETURNDESK.git returndesk
+cd returndesk
 npm install
-
-# 2. Configure
-cp .env.example .env
-#    edit DATABASE_URL (and TEST_DATABASE_URL if you want to run integration tests)
-
-# 3. Create the database (example for a local server; skip if it exists)
-createdb returndesk
-
-# 4. Build the schema from empty, then load sample data
-npm run db:migrate
-npm run db:seed
-
-# 5. Run
-npm run dev        # http://localhost:3000
 ```
 
-Quick Postgres with Docker, if you don't have one:
+### 3. Get a PostgreSQL database — pick ONE option
+
+You need a database the app can log in to. Choose whichever fits your machine.
+
+<details open>
+<summary><b>Option A — Docker (easiest, works on Windows/macOS/Linux)</b></summary>
 
 ```bash
-docker run --name returndesk-pg -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:16
+docker run --name returndesk-pg -e POSTGRES_PASSWORD=postgres -p 5433:5432 -d postgres:16
 docker exec returndesk-pg createdb -U postgres returndesk
 docker exec returndesk-pg createdb -U postgres returndesk_test
 ```
 
-### Environment variables
+This deliberately uses host port **5433**, so it won't clash with a PostgreSQL already installed on 5432. Your `.env` lines become:
 
-| Variable            | Required | Purpose                                                                  |
-| ------------------- | -------- | ------------------------------------------------------------------------ |
-| `DATABASE_URL`      | yes      | PostgreSQL connection string used by the app, migrations and the seed.   |
-| `TEST_DATABASE_URL` | tests    | Disposable database for integration tests. **It is wiped on every run.** |
-| `DATABASE_POOL_MAX` | no       | Max connections per server instance (default 5).                         |
+```dotenv
+DATABASE_URL="postgresql://postgres:postgres@localhost:5433/returndesk?schema=public"
+TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5433/returndesk_test?schema=public"
+```
 
-TLS is enabled automatically for Neon URLs or any URL containing `sslmode=require`.
+Stop / start it later with `docker stop returndesk-pg` / `docker start returndesk-pg`.
+</details>
+
+<details>
+<summary><b>Option B — PostgreSQL already installed on your machine</b></summary>
+
+Use the `postgres` user's password **you chose when installing PostgreSQL** (it is usually _not_
+`postgres`). Create the two databases (you'll be asked for that password):
+
+```bash
+# macOS / Linux
+createdb -U postgres -h localhost returndesk
+createdb -U postgres -h localhost returndesk_test
+```
+
+```powershell
+# Windows (PowerShell) — adjust 17 to your installed version
+& "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -h localhost -c "CREATE DATABASE returndesk;"
+& "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -h localhost -c "CREATE DATABASE returndesk_test;"
+```
+
+Then put **your** password in `.env`:
+
+```dotenv
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/returndesk?schema=public"
+TEST_DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/returndesk_test?schema=public"
+```
+
+If the password contains special characters, URL-encode them:
+`@`→`%40` `#`→`%23` `:`→`%3A` `/`→`%2F` `%`→`%25` `?`→`%3F` `&`→`%26` (e.g. `pa@ss#1` → `pa%40ss%231`).
+</details>
+
+<details>
+<summary><b>Option C — Free hosted database on Neon (no local install at all)</b></summary>
+
+1. Sign up at [neon.tech](https://neon.tech) and create a project.
+2. Click **Connect** and copy the connection string (`postgresql://…neon.tech/neondb?sslmode=require…`).
+3. Paste it as `DATABASE_URL` in `.env`. TLS is switched on automatically for Neon.
+4. Optional, for `npm test`: create a second database `returndesk_test` (Neon → Databases → New
+   database) and use the same string with `/neondb` replaced by `/returndesk_test` as `TEST_DATABASE_URL`.
+
+</details>
+
+### 4. Configure environment variables
+
+```bash
+cp .env.example .env              # macOS / Linux / Git Bash
+Copy-Item .env.example .env       # Windows PowerShell
+```
+
+Edit `.env` with the connection string from step 3.
+
+| Variable            | Required            | Purpose                                                                                               |
+| ------------------- | ------------------- | ----------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`      | **yes**             | Connection string used by the app, migrations and the seed.                                           |
+| `TEST_DATABASE_URL` | only for `npm test` | Disposable database for integration tests. **Wiped on every test run — never point it at real data.** |
+| `DATABASE_POOL_MAX` | no                  | Max connections per server instance (default 5).                                                      |
+
+`.env` is git-ignored. Never commit it.
+
+### 5. Create the schema and load sample data
+
+```bash
+npm run db:migrate   # → "Migrations applied."
+npm run db:seed      # → "Seed complete: 34 created, 0 already present."
+```
+
+Both commands are **safe to rerun**: migrations already applied are skipped, and the seed never
+duplicates rows (a second run prints `0 created, 34 already present`).
+
+### 6. Start the app
+
+```bash
+npm run dev
+```
+
+Open **http://localhost:3000** — it redirects to the dashboard. To run the optimised production
+build instead: `npm run build && npm start`.
+
+### 7. Verify it works (30 seconds)
+
+- The dashboard shows **34 active requests** across five statuses.
+- `http://localhost:3000/api/stats` returns JSON starting with `{"success":true`.
+- Try a rule from the terminal — moving an Open request straight to Completed is refused:
+
+  ```bash
+  # macOS / Linux / Git Bash
+  ID=$(curl -s "localhost:3000/api/requests?status=OPEN&pageSize=1" | node -pe 'JSON.parse(require("fs").readFileSync(0)).data[0].id')
+  curl -s -X POST "localhost:3000/api/requests/$ID/transitions" -H "content-type: application/json" -d '{"to":"COMPLETED"}'
+  # → {"success":false,"error":{"code":"INVALID_STATUS_TRANSITION", ...}}  (HTTP 409)
+  ```
+
+### 8. Run the tests (optional)
+
+```bash
+npm test                      # 126 unit + API integration tests (needs TEST_DATABASE_URL)
+npx playwright install chromium   # one-time browser download for E2E
+npm run test:e2e              # 11 browser journeys at 1440px and 375px (starts the dev server if needed)
+npm run lint && npm run typecheck
+```
+
+Integration tests drop and rebuild the schema in `TEST_DATABASE_URL` from the migrations on every
+run, so they also prove the migrations work on an empty database. E2E tests use `DATABASE_URL` and
+add a few requests to it; rerun `npm run db:seed` any time — it won't duplicate.
 
 ### Scripts
 
-| Command                           | What it does                                                      |
-| --------------------------------- | ----------------------------------------------------------------- |
-| `npm run db:migrate`              | Applies all pending SQL migrations in `drizzle/` (idempotent).    |
-| `npm run db:seed`                 | Inserts 34 sample requests. Safe to rerun — never duplicates.     |
-| `npm run dev` / `build` / `start` | Next.js                                                           |
-| `npm test`                        | Unit + API integration tests (needs `TEST_DATABASE_URL`).         |
-| `npm run test:e2e`                | Playwright journeys (starts `npm run dev` if nothing is running). |
-| `npm run lint` / `typecheck`      | ESLint / TypeScript.                                              |
+| Command                                                       | What it does                                              |
+| ------------------------------------------------------------- | --------------------------------------------------------- |
+| `npm run dev`                                                 | Development server on http://localhost:3000               |
+| `npm run build` / `npm start`                                 | Production build / serve it                               |
+| `npm run db:migrate`                                          | Apply pending SQL migrations from `drizzle/` (idempotent) |
+| `npm run db:seed`                                             | Insert the 34 sample requests (idempotent)                |
+| `npm run db:generate`                                         | Generate a new migration after editing `src/db/schema.ts` |
+| `npm run db:studio`                                           | Browse the database in Drizzle Studio                     |
+| `npm test` / `npm run test:unit` / `npm run test:integration` | Vitest suites                                             |
+| `npm run test:e2e`                                            | Playwright journeys                                       |
+| `npm run lint` / `npm run typecheck` / `npm run format`       | ESLint / TypeScript / Prettier                            |
+
+### Reset everything
+
+```bash
+# Docker option: throw the database away and start fresh
+docker rm -f returndesk-pg   # then repeat step 3A and step 5
+```
+
+For a local PostgreSQL, drop and recreate the `returndesk` database, then run step 5 again.
+
+### Troubleshooting
+
+| Symptom                                               | Cause and fix                                                                                                                                                                                                 |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `password authentication failed for user "postgres"`  | The password in `DATABASE_URL` is not your PostgreSQL password. Use the one chosen at install time (URL-encode special characters), or use **Option A** (Docker on port 5433) or **Option C** (Neon) instead. |
+| `DATABASE_URL is not set`                             | `.env` is missing or not in the project root. Run `cp .env.example .env` (or `Copy-Item`) and edit it.                                                                                                        |
+| `ECONNREFUSED 127.0.0.1:5432` / `:5433`               | PostgreSQL isn't running or is on a different port. Start it (`docker start returndesk-pg`, or the PostgreSQL service on Windows) and check the port in `DATABASE_URL`.                                       |
+| `database "returndesk" does not exist`                | Create it (step 3).                                                                                                                                                                                           |
+| Docker: `port is already allocated`                   | Something already uses that port. Pick another host port (e.g. `-p 5434:5432`) and update `.env`.                                                                                                             |
+| `permission denied to create extension "pg_trgm"`     | Your database user can't create extensions. Use the `postgres` superuser locally (Neon allows it by default).                                                                                                 |
+| `Port 3000 is in use`                                 | Next.js picks the next free port automatically; use the URL it prints, or run `npx next dev -p 3001`.                                                                                                         |
+| `npm test` fails with `TEST_DATABASE_URL must be set` | Add `TEST_DATABASE_URL` to `.env` pointing at a **separate, disposable** database.                                                                                                                            |
+| `npm run test:e2e`: `Executable doesn't exist`        | Run `npx playwright install chromium` once.                                                                                                                                                                   |
 
 ## Architecture
 
@@ -336,4 +480,4 @@ Hosted on **Vercel** with **Neon** PostgreSQL.
 
 ## Time spent
 
-Approximately **_TBD_ hours** of focused work (updated at submission).
+Approximately **4 hours**.
