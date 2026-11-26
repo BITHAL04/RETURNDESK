@@ -6,7 +6,7 @@
 import type { RequestStatus } from "./constants";
 
 /** Rule 1: the only legal transitions. REJECTED and COMPLETED are final. */
-export const TRANSITIONS: Readonly<Record<RequestStatus, readonly RequestStatus[]>> = {
+const TRANSITIONS: Readonly<Record<RequestStatus, readonly RequestStatus[]>> = {
   OPEN: ["IN_REVIEW"],
   IN_REVIEW: ["APPROVED", "REJECTED"],
   APPROVED: ["COMPLETED"],
@@ -22,7 +22,7 @@ export function canTransition(from: RequestStatus, to: RequestStatus): boolean {
   return TRANSITIONS[from].includes(to);
 }
 
-export function isFinal(status: RequestStatus): boolean {
+function isFinal(status: RequestStatus): boolean {
   return TRANSITIONS[status].length === 0;
 }
 
@@ -52,4 +52,3 @@ export function availableActions(status: RequestStatus) {
     canAddNote: true,
   };
 }
-export type AvailableActions = ReturnType<typeof availableActions>;

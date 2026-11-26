@@ -17,7 +17,7 @@ import {
 import type { RequestDto } from "@/server/requests/serialize";
 import { cn, formatMoney, formatRelative, initials } from "@/lib/utils";
 
-export type DashboardStats = {
+type DashboardStats = {
   total: number;
   byStatus: Record<RequestStatus, number>;
   byReason: Record<ReturnReason, number>;

@@ -24,7 +24,6 @@ export const REQUEST_EVENT_TYPES = [
   "STATUS_CHANGED",
   "REMOVED",
 ] as const;
-export type RequestEventType = (typeof REQUEST_EVENT_TYPES)[number];
 
 export const STATUS_LABELS: Record<RequestStatus, string> = {
   OPEN: "Open",

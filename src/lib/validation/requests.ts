@@ -20,7 +20,7 @@ const optionalPhone = z
   .nullish()
   .transform((v) => (v ? v : null));
 
-export const requestDetailsShape = {
+const requestDetailsShape = {
   customerName: trimmed("Customer name", 120),
   customerEmail: z
     .string({ error: "Customer email is required." })
@@ -99,7 +99,7 @@ export const createNoteSchema = z.strictObject({
 });
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
 
-export const SORTABLE_FIELDS = [
+const SORTABLE_FIELDS = [
   "createdAt",
   "updatedAt",
   "reference",

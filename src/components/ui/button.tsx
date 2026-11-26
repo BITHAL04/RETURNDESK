@@ -21,7 +21,7 @@ const sizes = {
   icon: "h-9 w-9 justify-center",
 } as const;
 
-export type ButtonProps = Omit<HTMLMotionProps<"button">, "children"> & {
+type ButtonProps = Omit<HTMLMotionProps<"button">, "children"> & {
   variant?: keyof typeof variants;
   size?: keyof typeof sizes;
   loading?: boolean;

@@ -6,7 +6,7 @@
 import { ZodError } from "zod";
 import { AppError, errors, type ErrorCode, type ErrorDetails } from "../errors";
 
-export type ApiFailure = {
+type ApiFailure = {
   success: false;
   error: { code: ErrorCode; message: string; details?: ErrorDetails };
 };
@@ -29,7 +29,7 @@ export function fail(error: AppError) {
   return Response.json(body, { status: error.status });
 }
 
-export function zodToAppError(error: ZodError): AppError {
+function zodToAppError(error: ZodError): AppError {
   const details = error.issues.map((issue) => ({
     field: issue.path.join(".") || null,
     message: issue.message,
@@ -96,7 +96,7 @@ export function databaseToAppError(error: unknown): AppError | undefined {
   }
 }
 
-export function toErrorResponse(error: unknown): Response {
+function toErrorResponse(error: unknown): Response {
   if (error instanceof AppError) return fail(error);
   if (error instanceof ZodError) return fail(zodToAppError(error));
   const mapped = databaseToAppError(error);

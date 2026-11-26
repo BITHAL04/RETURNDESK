@@ -16,8 +16,6 @@ import { createRequestSchema, type CreateRequestInput } from "@/lib/validation/r
 
 type FormInput = z.input<typeof createRequestSchema>;
 
-export type RequestFormValues = CreateRequestInput;
-
 const EMPTY: FormInput = {
   customerName: "",
   customerEmail: "",
@@ -44,7 +42,7 @@ export function RequestForm({
   submitLabel: string;
   cancelHref: string;
   /** Receives only the fields the agent changed (all fields on create). */
-  onSubmit: (values: RequestFormValues, changed: Partial<RequestFormValues>) => Promise<void>;
+  onSubmit: (values: CreateRequestInput, changed: Partial<CreateRequestInput>) => Promise<void>;
 }) {
   const [serverError, setServerError] = useState<ApiClientError | null>(null);
   const {
@@ -62,7 +60,7 @@ export function RequestForm({
     setServerError(null);
     const changed = Object.fromEntries(
       Object.entries(values).filter(([key]) => dirtyFields[key as keyof FormInput]),
-    ) as Partial<RequestFormValues>;
+    ) as Partial<CreateRequestInput>;
     try {
       await onSubmit(values, changed);
     } catch (error) {
