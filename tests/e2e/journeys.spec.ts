@@ -44,6 +44,8 @@ test("raise, review, approve with refund, note after decision, complete", async 
   await page.getByLabel("Add a note").fill("Refund issued via the payment provider.");
   await page.getByLabel("Your name").fill("E2E Agent");
   await page.getByRole("button", { name: "Post note" }).click();
+  // The composer only clears once the server has saved the note.
+  await expect(page.getByLabel("Add a note")).toHaveValue("");
   await expect(page.getByText("Refund issued via the payment provider.")).toBeVisible();
 
   await page.getByRole("button", { name: "Mark completed" }).click();

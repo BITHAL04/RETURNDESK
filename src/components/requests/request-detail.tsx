@@ -7,7 +7,7 @@ import { ReasonTag, StatusBadge } from "@/components/ui/badges";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
-import { useRequest, type RequestDetail as Detail } from "@/hooks/use-request";
+import { useRequest } from "@/hooks/use-request";
 import { RESOLUTION_LABELS } from "@/lib/domain/constants";
 import { formatDateTime, formatMoney } from "@/lib/utils";
 import { ActivityTimeline } from "./activity-timeline";
@@ -163,10 +163,16 @@ export function RequestDetail({ id }: { id: string }) {
           notes={request.notes}
           history={request.history}
           onNoteAdded={(note) =>
-            setState({
-              kind: "ready",
-              request: { ...request, notes: [...request.notes, note] } satisfies Detail,
-            })
+            // Functional update: append to the latest state, never to a stale copy captured
+            // before a concurrent refresh (e.g. a status change that finished first).
+            setState((current) =>
+              current.kind === "ready"
+                ? {
+                    kind: "ready",
+                    request: { ...current.request, notes: [...current.request.notes, note] },
+                  }
+                : current,
+            )
           }
         />
       </div>
