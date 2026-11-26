@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,15 +16,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
       <body>
         {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            classNames: {
-              toast: "!rounded-xl !border-line !shadow-raised !font-sans",
-              description: "!text-ink-muted",
-            },
-          }}
-        />
+        <Toaster />
       </body>
     </html>
   );
